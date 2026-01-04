@@ -36,7 +36,11 @@ public class JwtService {
     }
 
     public Claims extractAllClaims(String token) {
-        return null;
+        return Jwts.parser()
+                .verifyWith(getSignKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -52,9 +56,9 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public boolean isTokenValidated(String token, UserDetails userDetails) {
+    public boolean isTokenValid(String token, UserDetails userDetails) {
         String username = extractSubject(token);
         Date exp = extractExpiration(token);
-        return (username.equals(userDetails.getUsername()) && exp.before(new Date()));
+        return (username.equals(userDetails.getUsername()) && exp.after(new Date()));
     }
 }
